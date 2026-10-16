@@ -1,0 +1,16 @@
+# ---- 厂商资料：不入库，原仓库见 README 里的链接 ----
+/q1-dev-guide/
+/q1-urdf/
+/q1-sdk-src/
+/repo2/
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# ---- 本地临时文件 ----
+.git-token.tmp
+.push.sh
+*.log

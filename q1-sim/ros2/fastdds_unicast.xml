@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  针对「WSL2 NAT 下访问真机」的 Fast DDS 起点配置。
+
+  ⚠️ 重要：这份配置**没有在真机上验证过**（验证它需要真实机器人）。
+     它只是把要调的几个位置标出来，请按实际情况调整后再使用。
+
+  它要解决的两件事：
+    1. 多播发现在 WSL2 NAT 下出不去   -> 改用 initialPeersList 单播发现
+    2. DDS 会把本机地址通告成 WSL 的 172.21.x.x，机器人无法回连
+       -> 用 defaultUnicastLocatorList 覆盖成 Windows 主机在机器人网段的地址
+
+  ⚠️ 第 2 点单独做是没用的：WSL2 里根本无法绑定 10.1.1.99（该地址在 Windows 主机上），
+     必须配合 Windows 侧的 UDP 中继／转发，让包真的从 10.1.1.99 出去。
+     详见 docs/真机连接与WSL2_NAT.md。
+
+  用法：
+    export FASTRTPS_DEFAULT_PROFILES_FILE=/mnt/e/robot/q1-sim/ros2/fastdds_unicast.xml
+    # 然后正常启动节点即可
+-->
+<dds xmlns="http://www.eprosima.com/XMLSchemas/fastRTPS_Profiles">
+  <profiles>
+
+    <participant profile_name="q1_unicast_participant" is_default_profile="true">
+      <rtps>
+        <name>q1_wsl_participant</name>
+
+        <!-- 只用单播发现：把两块板子列为初始对端 -->
+        <builtin>
+          <discovery_config>
+            <discoveryProtocol>SIMPLE</discoveryProtocol>
+            <!-- 机器人不在线时可以调小，避免长时间等待 -->
+            <leaseDuration>
+              <sec>20</sec>
+            </leaseDuration>
+            <leaseAnnouncement>
+              <sec>3</sec>
+            </leaseAnnouncement>
+          </discovery_config>
+
+          <initialPeersList>
+            <locator>
+              <udpv4>
+                <address>10.1.1.100</address>
+              </udpv4>
+            </locator>
+            <locator>
+              <udpv4>
+                <address>10.1.1.101</address>
+              </udpv4>
+            </locator>
+          </initialPeersList>
+
+          <!-- 走中继时，元流量也要用被覆盖后的地址通告 -->
+          <metatrafficUnicastLocatorList>
+            <locator>
+              <udpv4>
+                <address>10.1.1.99</address>
+                <port>0</port>
+              </udpv4>
+            </locator>
+          </metatrafficUnicastLocatorList>
+        </builtin>
+
+        <!-- 关键：覆盖本机通告给别人的地址（默认会是 172.21.x.x） -->
+        <defaultUnicastLocatorList>
+          <locator>
+            <udpv4>
+              <address>10.1.1.99</address>
+              <port>0</port>
+            </udpv4>
+          </locator>
+        </defaultUnicastLocatorList>
+
+        <!--
+          想彻底屏蔽多播时，改为 useBuiltinTransports=false 并显式给出传输描述符，
+          不同 Fast DDS 版本里抑制多播的开关名不完全一致，请以
+          `ros2 doctor --report` 与厂商板子上的 Fast DDS 版本为准再调。
+        -->
+        <useBuiltinTransports>true</useBuiltinTransports>
+      </rtps>
+    </participant>
+
+  </profiles>
+</dds>

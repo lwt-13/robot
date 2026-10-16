@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>q1_description</name>
+  <version>0.1.0</version>
+  <description>
+    启元 Q1 人形机器人 URDF 描述包（ROS2 Humble 移植版）。
+    上游为 AtomGit primebot/q1-urdf（ROS1 catkin 包，包名 Q1-V2.0-URDF-0601），
+    本包做了三处修正：改用 ament 构建、把 mesh 路径从相对路径改为 package://、
+    去掉 urdf 中的 &lt;mujoco&gt; 扩展标签。模型本体与网格文件未做任何修改。
+  </description>
+  <maintainer email="dev@example.com">Q1 Sim Env</maintainer>
+  <license>BSD</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <exec_depend>robot_state_publisher</exec_depend>
+  <exec_depend>joint_state_publisher</exec_depend>
+  <exec_depend>joint_state_publisher_gui</exec_depend>
+  <exec_depend>rviz2</exec_depend>
+  <exec_depend>xacro</exec_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
